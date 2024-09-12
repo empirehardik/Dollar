@@ -1,0 +1,31 @@
+name: Deploy PHP to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+
+    - name: Convert PHP to HTML
+      run: |
+        mkdir _site
+        for file in $(find . -name "*.php"); do
+          php "$file" > "_site/$(basename "$file" .php).html"
+        done
+        cp -R css images js _site/
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./_site
